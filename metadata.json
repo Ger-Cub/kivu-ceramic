@@ -1,0 +1,6 @@
+{
+  "name": "Kivu Ceramic",
+  "description": "Atelier de céramique artisanale et sociale à Bukavu (RDC), alliant tradition et innovation pour la réhabilitation des jeunes et la promotion du Made in Congo.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
