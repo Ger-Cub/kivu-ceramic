@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
+import ws from 'ws';
 
 // Load env vars
 dotenv.config();
@@ -14,7 +15,14 @@ if (!supabaseUrl || !supabaseKey) {
     process.exit(1);
 }
 
-const supabase = createClient(supabaseUrl, supabaseKey);
+const supabase = createClient(supabaseUrl, supabaseKey, {
+    auth: {
+        persistSession: false
+    },
+    realtime: {
+        transport: ws
+    }
+});
 
 async function migrate() {
     const dbPath = path.join(process.cwd(), 'data', 'db.json');
@@ -30,11 +38,13 @@ async function migrate() {
     // 1. Migrate Company Settings
     if (data.company) {
         console.log("Migrating company settings...");
+        const { aboutText, ...rest } = data.company;
         const { error } = await supabase
             .from('company_settings')
             .upsert({
                 id: 1,
-                ...data.company
+                ...rest,
+                about_text: aboutText
             });
         if (error) console.error("Error company_settings:", error.message);
     }
