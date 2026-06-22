@@ -32,9 +32,13 @@ export default function Header({ activeTab, setActiveTab, isAdminLoggedIn, onLog
           {/* Logo & Brand Name */}
           <div className="flex items-center gap-3 cursor-pointer" onClick={() => handleNavClick('home')}>
             {/* Styled Ceramic Pot abstraction in SVG */}
-            <div className="flex items-center justify-center w-11 h-11 rounded-full bg-linear-to-br from-[#df6438] to-[#8b3417] text-white shadow-md relative overflow-hidden group">
-              <span className="font-display font-bold text-xl tracking-tight">KO</span>
-              <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <div className="flex items-center justify-center w-11 h-11 relative group">
+              <img
+                src="/assets/kivu-ceramic-logo.svg"
+                alt="Kivu Ceramic"
+                className="w-full h-full object-contain"
+              />
+              <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity rounded-full"></div>
             </div>
             <div>
               <span className="font-display font-bold text-xl tracking-tight uppercase text-stone-900 block leading-tight">
@@ -54,11 +58,10 @@ export default function Header({ activeTab, setActiveTab, isAdminLoggedIn, onLog
                 <button
                   key={item.id}
                   onClick={() => handleNavClick(item.id)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium tracking-wide transition-all ${
-                    isActive
+                  className={`px-4 py-2 rounded-full text-sm font-medium tracking-wide transition-all ${isActive
                       ? 'bg-[#df6438] text-white shadow-xs'
                       : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100/50'
-                  }`}
+                    }`}
                 >
                   {item.label}
                 </button>
@@ -72,11 +75,10 @@ export default function Header({ activeTab, setActiveTab, isAdminLoggedIn, onLog
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => handleNavClick('admin')}
-                  className={`px-4 py-2 border border-dashed rounded-full text-xs font-mono font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all ${
-                    activeTab === 'admin'
+                  className={`px-4 py-2 border border-dashed rounded-full text-xs font-mono font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all ${activeTab === 'admin'
                       ? 'bg-amber-100/50 border-amber-600 text-amber-900'
                       : 'border-yellow-600 text-yellow-800 bg-yellow-50'
-                  }`}
+                    }`}
                 >
                   <ShieldAlert className="w-3.5 h-3.5" /> Paneau Admin
                 </button>
@@ -90,9 +92,8 @@ export default function Header({ activeTab, setActiveTab, isAdminLoggedIn, onLog
             ) : (
               <button
                 onClick={() => handleNavClick('admin')}
-                className={`px-4 py-2 border border-stone-300 rounded-full text-xs font-mono font-semibold uppercase tracking-wider text-stone-600 hover:border-terracotta-600 hover:text-terracotta-700 transition-all ${
-                  activeTab === 'admin' ? 'bg-terracotta-50 border-terracotta-200 text-terracotta-700' : ''
-                }`}
+                className={`px-4 py-2 border border-stone-300 rounded-full text-xs font-mono font-semibold uppercase tracking-wider text-stone-600 hover:border-terracotta-600 hover:text-terracotta-700 transition-all ${activeTab === 'admin' ? 'bg-terracotta-50 border-terracotta-200 text-terracotta-700' : ''
+                  }`}
               >
                 Connexion
               </button>
@@ -127,11 +128,10 @@ export default function Header({ activeTab, setActiveTab, isAdminLoggedIn, onLog
               <button
                 key={item.id}
                 onClick={() => handleNavClick(item.id)}
-                className={`w-full text-left px-4 py-3 rounded-xl text-base font-medium transition-all ${
-                  isActive
+                className={`w-full text-left px-4 py-3 rounded-xl text-base font-medium transition-all ${isActive
                     ? 'bg-[#df6438] text-white shadow-xs'
                     : 'text-stone-700 hover:bg-stone-100'
-                }`}
+                  }`}
               >
                 {item.label}
               </button>
@@ -142,11 +142,10 @@ export default function Header({ activeTab, setActiveTab, isAdminLoggedIn, onLog
               <div className="space-y-1.5 pt-1">
                 <button
                   onClick={() => handleNavClick('admin')}
-                  className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-center text-sm font-semibold transition-all ${
-                    activeTab === 'admin'
+                  className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-center text-sm font-semibold transition-all ${activeTab === 'admin'
                       ? 'bg-amber-100 border border-amber-300 text-amber-900'
                       : 'bg-[#df6438]/10 text-[#df6438]'
-                  }`}
+                    }`}
                 >
                   <ShieldAlert className="w-4 h-4" /> Gérer l'Atelier
                 </button>
@@ -163,9 +162,8 @@ export default function Header({ activeTab, setActiveTab, isAdminLoggedIn, onLog
             ) : (
               <button
                 onClick={() => handleNavClick('admin')}
-                className={`w-full py-3 px-4 rounded-xl text-center text-sm font-semibold border border-stone-300 text-stone-700 hover:border-terracotta-600 hover:text-terracotta-700 ${
-                  activeTab === 'admin' ? 'bg-terracotta-50 border-terracotta-200 text-terracotta-700' : ''
-                }`}
+                className={`w-full py-3 px-4 rounded-xl text-center text-sm font-semibold border border-stone-300 text-stone-700 hover:border-terracotta-600 hover:text-terracotta-700 ${activeTab === 'admin' ? 'bg-terracotta-50 border-terracotta-200 text-terracotta-700' : ''
+                  }`}
               >
                 Connexion
               </button>

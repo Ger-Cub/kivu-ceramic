@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Building, BookOpen, MessageSquare, Database, Plus, Trash2, Edit3, CheckCheck, 
+import {
+  Building, BookOpen, MessageSquare, Database, Plus, Trash2, Edit3, CheckCheck,
   SquarePlay, ShieldAlert, Sparkles, Loader2, LogOut, Check, ChevronDown, CheckCircle, AlertCircle
 } from 'lucide-react';
 import { Article, Contact, CompanyDetails } from '../types';
@@ -337,7 +337,7 @@ export default function AdminView({
     return (
       <div className="min-h-screen w-full bg-stone-50 flex flex-col items-center justify-center p-6 relative">
         <AfricanPattern variant="kuba" className="opacity-[0.035]" />
-        
+
         {/* Flat button to go back to public app view */}
         <button
           onClick={onBackToSite}
@@ -399,14 +399,21 @@ export default function AdminView({
 
   // 2. AUTHENTICATED PANEL WORKSPACE DIRECTORY Layout
   return (
-    <div className="bg-white border-0 md:border border-stone-200 rounded-none md:rounded-3xl shadow-none md:shadow-xs overflow-hidden animate-fade-in text-stone-700 min-h-screen md:min-h-[680px] flex flex-col md:flex-row relative">
-      
+    <div className="bg-white w-full min-h-screen flex flex-col md:flex-row relative animate-fade-in text-stone-700">
+
       {/* Horizontal / Vertical sidebar menu */}
       <aside className="w-full md:w-64 bg-stone-950 text-stone-300 p-6 space-y-6 shrink-0 flex flex-col justify-between border-r border-stone-800">
-        
+
         {/* Navigation block */}
         <div className="space-y-6">
           <div className="space-y-1 pb-4 border-b border-stone-800">
+            <div className="w-10 h-10 mb-2">
+              <img
+                src="/assets/kivu-ceramic-logo.svg"
+                alt="Logo"
+                className="w-full h-full object-contain brightness-0 invert"
+              />
+            </div>
             <span className="text-[10px] font-mono text-stone-500 font-extrabold uppercase tracking-widest block">
               Console Solidaire
             </span>
@@ -428,11 +435,10 @@ export default function AdminView({
                 <button
                   key={it.id}
                   onClick={() => setAdminTab(it.id as any)}
-                  className={`w-full flex items-center gap-2.5 px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors text-left cursor-pointer ${
-                    isActive
-                      ? 'bg-[#df6438] text-white shadow-xs'
-                      : 'text-stone-300 hover:bg-stone-900 hover:text-white'
-                  }`}
+                  className={`w-full flex items-center gap-2.5 px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors text-left cursor-pointer ${isActive
+                    ? 'bg-[#df6438] text-white shadow-xs'
+                    : 'text-stone-300 hover:bg-stone-900 hover:text-white'
+                    }`}
                 >
                   <Icon className="w-4 h-4 shrink-0" />
                   {it.label}
@@ -450,7 +456,7 @@ export default function AdminView({
           >
             <span className="text-[#df6438] text-sm">←</span> Retourner au site
           </button>
-          
+
           <button
             onClick={onLogoutAdmin}
             className="w-full flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-stone-400 hover:bg-rose-950/40 hover:text-rose-400 text-xs font-bold uppercase tracking-wider transition-colors text-left cursor-pointer"
@@ -463,7 +469,7 @@ export default function AdminView({
 
       {/* Primary work panel layout area */}
       <section className="flex-grow p-6 sm:p-8 space-y-8 min-w-0">
-        
+
         {/* ------------------------------------------------------------- */}
         {/* INTERACTIVE WORK AREA: DASHBOARD STATISTICS SECTION */}
         {/* ------------------------------------------------------------- */}
@@ -734,9 +740,8 @@ export default function AdminView({
                 {contacts.map(msg => (
                   <div
                     key={msg.id}
-                    className={`p-6 border rounded-2xl space-y-3.5 hover:shadow-xs transition-hover bg-white ${
-                      msg.status === 'unread' ? 'border-amber-300 ring-2 ring-amber-500/5' : 'border-stone-200'
-                    }`}
+                    className={`p-6 border rounded-2xl space-y-3.5 hover:shadow-xs transition-hover bg-white ${msg.status === 'unread' ? 'border-amber-300 ring-2 ring-amber-500/5' : 'border-stone-200'
+                      }`}
                   >
                     {/* Header bar of message container */}
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2.5 border-b border-stone-150">
@@ -749,16 +754,15 @@ export default function AdminView({
 
                       <div className="flex items-center gap-1.5">
                         {/* Status bag */}
-                        <span className={`px-2.5 py-0.5 rounded-sm text-[9px] font-mono font-bold uppercase ${
-                          msg.status === 'unread' 
-                            ? 'bg-amber-100 text-amber-900 border border-amber-300' 
-                            : msg.status === 'read'
+                        <span className={`px-2.5 py-0.5 rounded-sm text-[9px] font-mono font-bold uppercase ${msg.status === 'unread'
+                          ? 'bg-amber-100 text-amber-900 border border-amber-300'
+                          : msg.status === 'read'
                             ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
                             : 'bg-stone-100 text-stone-500'
-                        }`}>
+                          }`}>
                           {msg.status === 'unread' ? 'Non lu' : msg.status === 'read' ? 'Lu' : 'Répondu'}
                         </span>
-                        
+
                         <button
                           onClick={() => handleUpdateContactStatus(msg.id, msg.status)}
                           className="px-2 py-1 bg-stone-100 hover:bg-stone-200 rounded-sm text-[10px] font-extrabold uppercase"

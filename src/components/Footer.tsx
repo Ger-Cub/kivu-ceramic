@@ -1,5 +1,5 @@
 import React from 'react';
-import { Mail, Phone, MapPin, Heart, Sparkles, Globe } from 'lucide-react';
+import { Mail, Phone, MapPin, Sparkles, Globe } from 'lucide-react';
 import { CompanyDetails } from '../types';
 
 interface FooterProps {
@@ -17,16 +17,20 @@ export default function Footer({ company, onNavigate }: FooterProps) {
           {/* Brand/Social Column */}
           <div className="md:col-span-2 space-y-5">
             <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-[#df6438] text-white font-display font-medium text-lg">
-                KO
+              <div className="flex items-center justify-center w-10 h-10 relative">
+                <img
+                  src="/assets/kivu-ceramic-logo.svg"
+                  alt="Kivu Ceramic"
+                  className="w-full h-full object-contain"
+                />
               </div>
               <span className="font-display font-semibold text-lg uppercase tracking-wider text-stone-100">
                 Kivu Ceramic
               </span>
             </div>
             <p className="text-stone-400 text-sm leading-relaxed max-w-md">
-              Valoriser l'argile locale du Sud-Kivu pour créer de sublimes objets authentiques 
-              « Made in DR Congo ». Notre mission de formation professionnelle et d'art-thérapie 
+              Valoriser l'argile locale du Sud-Kivu pour créer de sublimes objets authentiques
+              « Made in DR Congo ». Notre mission de formation professionnelle et d'art-thérapie
               redynamise la jeunesse vulnérable de Bukavu face aux défis d'insertion sociale.
             </p>
             <div className="flex items-center gap-2 text-[#df6438] text-xs font-mono tracking-widest uppercase">
@@ -105,8 +109,6 @@ export default function Footer({ company, onNavigate }: FooterProps) {
             &copy; {currentYear} Kivu Ceramic. Tous droits réservés.
           </div>
           <div className="flex items-center gap-1.5 font-mono">
-            <span>Fait à Bukavu avec amour</span>
-            <Heart className="w-3.5 h-3.5 text-rose-500 fill-current" />
             <span>&bull; Artisanat Engagé</span>
           </div>
         </div>
