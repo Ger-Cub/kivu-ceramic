@@ -39,6 +39,8 @@ interface DatabaseSchema {
   company: CompanyDetails;
 }
 
+// Use process.cwd() to ensure we find the 'data' directory in the root of the project.
+// In Vercel, this corresponds to the root of the deployment.
 const DB_FILE = path.join(process.cwd(), 'data', 'db.json');
 
 const DEFAULT_COMPANY: CompanyDetails = {
@@ -240,7 +242,7 @@ export const dbService = {
     const db = initDB();
     const idx = db.articles.findIndex(a => a.id === id);
     if (idx === -1) return null;
-    
+
     db.articles[idx] = {
       ...db.articles[idx],
       ...updatedData
