@@ -8,8 +8,9 @@ import BlogView from './components/BlogView';
 import ContactView from './components/ContactView';
 import AdminView from './components/AdminView';
 import AfricanPattern from './components/AfricanPattern';
+import { supabase } from './lib/supabase';
 import { ActiveTab, Article, Contact, CompanyDetails } from './types';
-import { Loader2, AlertCircle } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 
 export default function App() {
   // Navigation
@@ -41,49 +42,54 @@ export default function App() {
   const [errorMsg, setErrorMsg] = useState('');
 
   // -------------------------------------------------------------
-  // FETCHERS (STABILIZED HANDLERS)
+  // SUPABASE HANDLERS
   // -------------------------------------------------------------
   const fetchCompanyDetails = async () => {
     try {
-      const res = await fetch('/api/company');
-      if (res.ok) {
-        const data = await res.json();
-        setCompany(data);
-      } else {
-        throw new Error("Impossible de charger les données d'atelier.");
+      const { data, error } = await supabase
+        .from('company_settings')
+        .select('*')
+        .eq('id', 1)
+        .single();
+
+      if (error) throw error;
+      if (data) {
+        setCompany({
+          ...data,
+          aboutText: data.about_text // mapping db snake_case to camelCase
+        });
       }
     } catch (err: any) {
       console.error(err);
-      setErrorMsg("Impossible de joindre le serveur backend.");
+      setErrorMsg("Impossible de joindre la base de données.");
     }
   };
 
   const fetchArticles = async () => {
     try {
-      const res = await fetch('/api/articles');
-      if (res.ok) {
-        const data = await res.json();
-        setArticles(data);
-      }
+      const { data, error } = await supabase
+        .from('articles')
+        .select('*')
+        .order('date', { ascending: false });
+
+      if (error) throw error;
+      setArticles(data || []);
     } catch (err) {
       console.error("Failed to load blog articles:", err);
     }
   };
 
-  const fetchContacts = async (tokenValue: string | null) => {
-    const activeToken = tokenValue || adminToken;
-    if (!activeToken) return;
+  const fetchContacts = async () => {
+    if (!adminToken) return;
 
     try {
-      const res = await fetch('/api/contacts', {
-        headers: {
-          'Authorization': `Bearer ${activeToken}`
-        }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setContacts(data);
-      }
+      const { data, error } = await supabase
+        .from('contacts')
+        .select('*')
+        .order('date', { ascending: false });
+
+      if (error) throw error;
+      setContacts(data || []);
     } catch (err) {
       console.error("Failed to load contacts:", err);
     }
@@ -97,16 +103,15 @@ export default function App() {
       setLoading(true);
       setErrorMsg('');
       await Promise.all([fetchCompanyDetails(), fetchArticles()]);
-      
-      // If we have saved session token, grab initial inbox list too
+
       if (adminToken) {
-        await fetchContacts(adminToken);
+        await fetchContacts();
       }
       setLoading(false);
     };
-    
+
     initApp();
-  }, [adminToken]); // Refresh contacts when validation context changes
+  }, [adminToken]);
 
   // -------------------------------------------------------------
   // ACTION AUTHENTICATION HOOKS
@@ -114,20 +119,16 @@ export default function App() {
   const handleLoginSuccess = (token: string) => {
     localStorage.setItem('kivu_admin_token', token);
     setAdminToken(token);
-    fetchContacts(token);
+    fetchContacts();
   };
 
   const handleLogoutAdmin = () => {
     localStorage.removeItem('kivu_admin_token');
     setAdminToken(null);
     setContacts([]);
-    // Back to home
     setActiveTab('home');
   };
 
-  // -------------------------------------------------------------
-  // HELPER NAVIGATION TRIGGERS (UX INTEGRATION FOR DISCOVER COUPLING)
-  // -------------------------------------------------------------
   const handleProductQuoteAction = (quoteSubject: string) => {
     setPrefilledSubject(quoteSubject);
     handleNavigate('contact');
@@ -155,13 +156,22 @@ export default function App() {
     }
   };
 
-  const handleArticleClick = (articleId: string) => {
+  const handleArticleClick = async (articleId: string) => {
     setActiveArticleId(articleId);
-    // Track count update on server side too
-    fetch(`/api/articles/${articleId}`).then(() => {
-      // Re-fetch list to update view count state
-      fetchArticles();
-    });
+
+    // Increment view count in Supabase
+    try {
+      const article = articles.find(a => a.id === articleId);
+      if (article) {
+        await supabase
+          .from('articles')
+          .update({ views: (article.views || 0) + 1 })
+          .eq('id', articleId);
+        fetchArticles();
+      }
+    } catch (error) {
+      console.error("Failed to update view count:", error);
+    }
   };
 
   // Modern scroll-spy tracker: automatically highlighting current section on scroll
@@ -169,7 +179,7 @@ export default function App() {
     if (activeTab === 'admin' || loading) return;
 
     const sections = ['home', 'about', 'products', 'blog', 'contact'];
-    
+
     const onScroll = () => {
       const scrollPos = window.scrollY + 280; // offset to pick up center content
       for (const sectionId of sections) {
@@ -201,11 +211,11 @@ export default function App() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#FAF8F5]">
-      
+
       {/* 1. MAIN GLOBAL NAVBAR HEADER */}
       {activeTab !== 'admin' && (
-        <Header 
-          activeTab={activeTab} 
+        <Header
+          activeTab={activeTab}
           setActiveTab={(tab) => {
             handleNavigate(tab);
             // Clean cached subject if they leave the tab
@@ -218,25 +228,19 @@ export default function App() {
         />
       )}
 
-      {/* 2. ERROR STATE BAR */}
-      {errorMsg && (
-        <div className="bg-rose-600 text-white p-3 text-xs font-medium text-center flex items-center justify-center gap-1.5 animate-pulse relative z-50">
-          <AlertCircle className="w-4 h-4" />
-          <span>{errorMsg} — Fonctionnement hors-ligne ou local activé par défaut.</span>
-        </div>
-      )}
+
 
       {/* 3. DYNAMIC MAIN SPA SECTIONS */}
       <main className="flex-grow">
         {activeTab === 'admin' ? (
           <div className="w-full min-h-screen bg-stone-50">
-            <AdminView 
+            <AdminView
               company={company}
               onUpdateCompany={setCompany}
               articles={articles}
               onRefreshArticles={fetchArticles}
               contacts={contacts}
-              onRefreshContacts={() => fetchContacts(adminToken)}
+              onRefreshContacts={() => fetchContacts()}
               token={adminToken}
               onLoginSuccess={handleLoginSuccess}
               onLogoutAdmin={handleLogoutAdmin}
@@ -245,7 +249,7 @@ export default function App() {
           </div>
         ) : (
           <div className="flex flex-col">
-            
+
             {/* Section 1: ACCUEIL */}
             <section id="home" className="relative scroll-mt-20">
               <HomeView company={company} onNavigate={handleNavigate} />
@@ -271,8 +275,8 @@ export default function App() {
             <section id="blog" className="relative bg-white py-24 border-b border-stone-200/40 scroll-mt-20 overflow-hidden">
               <AfricanPattern variant="mesh" className="opacity-[0.03]" />
               <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 relative z-10">
-                <BlogView 
-                  articles={articles} 
+                <BlogView
+                  articles={articles}
                   onArticleClick={(articleId) => {
                     handleArticleClick(articleId);
                     const el = document.getElementById('blog');

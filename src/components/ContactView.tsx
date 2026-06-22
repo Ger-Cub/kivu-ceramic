@@ -7,6 +7,8 @@ interface ContactViewProps {
   prefilledSubject?: string;
 }
 
+import { supabase } from '../lib/supabase';
+
 export default function ContactView({ company, prefilledSubject = '' }: ContactViewProps) {
   // Input form state
   const [name, setName] = useState('');
@@ -31,26 +33,28 @@ export default function ContactView({ company, prefilledSubject = '' }: ContactV
     setSuccess(false);
 
     try {
-      const res = await fetch('/api/contacts', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ name, email, subject, message })
-      });
+      const { error } = await supabase
+        .from('contacts')
+        .insert([{
+          id: Math.random().toString(36).substring(2, 11),
+          name,
+          email,
+          subject,
+          message,
+          date: new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' }),
+          status: 'unread'
+        }]);
 
-      if (res.ok) {
-        setSuccess(true);
-        setName('');
-        setEmail('');
-        setSubject('');
-        setMessage('');
-      } else {
-        throw new Error("L'envoi a échoué. Le serveur a renvoyé une erreur.");
-      }
+      if (error) throw error;
+
+      setSuccess(true);
+      setName('');
+      setEmail('');
+      setSubject('');
+      setMessage('');
     } catch (err: any) {
       console.error(err);
-      setErrorMsg("Impossible de joindre le service de messagerie. Vos données ne sont pas perdues, veuillez réessayer d'ici quelques instants.");
+      setErrorMsg("Impossible d'envoyer votre message. Veuillez vérifier votre connexion et réessayer.");
     } finally {
       setSubmitting(false);
     }
@@ -58,7 +62,7 @@ export default function ContactView({ company, prefilledSubject = '' }: ContactV
 
   return (
     <div className="space-y-12 animate-fade-in text-stone-700">
-      
+
       {/* 1. SECTION INTRO */}
       <section className="text-center max-w-2xl mx-auto space-y-4">
         <span className="text-[#df6438] font-mono text-xs tracking-widest uppercase font-bold">
@@ -74,7 +78,7 @@ export default function ContactView({ company, prefilledSubject = '' }: ContactV
 
       {/* 2. CONTACT TWO COLUMN WRAP */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-10">
-        
+
         {/* Left Side: Detail & Address Info (2 Cols) */}
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-white border border-stone-200 p-6 rounded-3xl space-y-6 shadow-xs">
@@ -84,7 +88,7 @@ export default function ContactView({ company, prefilledSubject = '' }: ContactV
             <p className="text-xs text-stone-500 leading-relaxed font-light">
               Notre équipe d'Artisans Céramistes vous accueille chaleureusement au sein de notre atelier de Bukavu pour des commandes, visites privées ou consultations d'art-thérapie.
             </p>
-            
+
             <div className="space-y-4 pt-2">
               <div className="flex items-start gap-3">
                 <div className="p-2.5 bg-stone-50 rounded-xl text-stone-800">
