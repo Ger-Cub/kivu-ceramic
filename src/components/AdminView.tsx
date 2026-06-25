@@ -51,6 +51,7 @@ export default function AdminView({
   const [blogSubmitting, setBlogSubmitting] = useState(false);
   const [blogActionError, setBlogActionError] = useState('');
   const [blogActionSuccess, setBlogActionSuccess] = useState(false);
+  const [imageUploading, setImageUploading] = useState(false);
 
   // States for Company Settings Update
   const [compPhone, setCompPhone] = useState(company.phone);
@@ -241,6 +242,37 @@ export default function AdminView({
     setBlogTagsInput('');
     setBlogActionSuccess(false);
     setBlogActionError('');
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setImageUploading(true);
+    setBlogActionError('');
+
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = `articles/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('images')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('images')
+        .getPublicUrl(filePath);
+
+      setBlogImage(publicUrl);
+    } catch (err: any) {
+      console.error(err);
+      setBlogActionError("Erreur lors de l'envoi de l'image : " + err.message);
+    } finally {
+      setImageUploading(false);
+    }
   };
 
   // Handle article Creation or update save
@@ -602,14 +634,46 @@ export default function AdminView({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-[10px] font-mono text-stone-500 font-bold uppercase tracking-wider block">URL de l'image de couverture</label>
-                  <input
-                    type="text"
-                    value={blogImage}
-                    onChange={(e) => setBlogImage(e.target.value)}
-                    placeholder="https://images.unsplash.com/photo-..."
-                    className="w-full px-4 py-2.5 bg-white rounded-xl border border-stone-200 text-xs focus:outline-hidden focus:ring-1 focus:ring-[#df6438] text-stone-800 transition-all font-mono"
-                  />
+                  <label className="text-[10px] font-mono text-stone-500 font-bold uppercase tracking-wider block">Image de couverture</label>
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        disabled={imageUploading}
+                        className="hidden"
+                        id="image-upload"
+                      />
+                      <label
+                        htmlFor="image-upload"
+                        className={`flex-grow px-4 py-2 bg-stone-100 border border-stone-200 rounded-xl text-xs font-mono cursor-pointer flex items-center justify-center gap-2 hover:bg-stone-200 transition-all ${imageUploading ? 'opacity-50 pointer-events-none' : ''}`}
+                      >
+                        {imageUploading ? (
+                          <><Loader2 className="w-4 h-4 animate-spin" /> Envoi en cours...</>
+                        ) : (
+                          <>📷 Cliquer pour uploader une image</>
+                        )}
+                      </label>
+                    </div>
+                    {blogImage && (
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={blogImage}
+                          readOnly
+                          className="flex-grow px-4 py-2 bg-stone-50 rounded-xl border border-stone-100 text-[10px] font-mono text-stone-400 truncate"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setBlogImage('')}
+                          className="p-2 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="space-y-1">
