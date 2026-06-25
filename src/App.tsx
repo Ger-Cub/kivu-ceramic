@@ -9,7 +9,7 @@ import ContactView from './components/ContactView';
 import AdminView from './components/AdminView';
 import AfricanPattern from './components/AfricanPattern';
 import { supabase } from './lib/supabase';
-import { ActiveTab, Article, Contact, CompanyDetails } from './types';
+import { ActiveTab, Article, Contact, CompanyDetails, Product } from './types';
 import { Loader2 } from 'lucide-react';
 
 export default function App() {
@@ -22,6 +22,7 @@ export default function App() {
 
   // States
   const [articles, setArticles] = useState<Article[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [company, setCompany] = useState<CompanyDetails>({
     phone: '',
@@ -29,7 +30,10 @@ export default function App() {
     address: '',
     mission: '',
     vision: '',
-    aboutText: ''
+    aboutText: '',
+    catalogTitle: '',
+    catalogSubtitle: '',
+    catalogDescription: ''
   });
 
   // Authentication State
@@ -56,7 +60,10 @@ export default function App() {
       if (data) {
         setCompany({
           ...data,
-          aboutText: data.about_text // mapping db snake_case to camelCase
+          aboutText: data.about_text, // mapping db snake_case to camelCase
+          catalogTitle: data.catalog_title,
+          catalogSubtitle: data.catalog_subtitle,
+          catalogDescription: data.catalog_description
         });
       }
     } catch (err: any) {
@@ -76,6 +83,24 @@ export default function App() {
       setArticles(data || []);
     } catch (err) {
       console.error("Failed to load blog articles:", err);
+    }
+  };
+
+  const fetchProducts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .order('name', { ascending: true });
+
+      if (error) throw error;
+      const mapped = (data || []).map(p => ({
+        ...p,
+        isPopular: p.is_popular
+      }));
+      setProducts(mapped);
+    } catch (err) {
+      console.error("Failed to load products:", err);
     }
   };
 
@@ -102,7 +127,7 @@ export default function App() {
     const initApp = async () => {
       setLoading(true);
       setErrorMsg('');
-      await Promise.all([fetchCompanyDetails(), fetchArticles()]);
+      await Promise.all([fetchCompanyDetails(), fetchArticles(), fetchProducts()]);
 
       if (adminToken) {
         await fetchContacts();
@@ -239,6 +264,8 @@ export default function App() {
               onUpdateCompany={setCompany}
               articles={articles}
               onRefreshArticles={fetchArticles}
+              products={products}
+              onRefreshProducts={fetchProducts}
               contacts={contacts}
               onRefreshContacts={() => fetchContacts()}
               token={adminToken}
@@ -267,7 +294,13 @@ export default function App() {
             <section id="products" className="relative bg-stone-50 py-24 border-b border-stone-200/40 scroll-mt-20 overflow-hidden">
               <AfricanPattern variant="waves" className="opacity-[0.025]" />
               <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 relative z-10">
-                <ProductsView onNavigateToContact={handleProductQuoteAction} />
+                <ProductsView
+                  onNavigateToContact={handleProductQuoteAction}
+                  products={products}
+                  catalogTitle={company.catalogTitle}
+                  catalogSubtitle={company.catalogSubtitle}
+                  catalogDescription={company.catalogDescription}
+                />
               </div>
             </section>
 

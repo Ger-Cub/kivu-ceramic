@@ -21,6 +21,18 @@ export interface Contact {
   status: 'unread' | 'read' | 'replied';
 }
 
+export interface Product {
+  id: string;
+  name: string;
+  category: string;
+  description: string;
+  price: string;
+  image: string;
+  origin: string;
+  dimensions?: string;
+  isPopular?: boolean;
+}
+
 export interface CompanyDetails {
   phone: string;
   email: string;
@@ -28,6 +40,9 @@ export interface CompanyDetails {
   mission: string;
   vision: string;
   aboutText: string;
+  catalogTitle?: string;
+  catalogSubtitle?: string;
+  catalogDescription?: string;
 }
 
 export type ActiveTab = 'home' | 'about' | 'products' | 'blog' | 'contact' | 'admin';

@@ -1,25 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { ShoppingBag, ArrowRight, CornerDownRight, CheckCircle2 } from 'lucide-react';
+import { ShoppingBag, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Product } from '../types';
 
 interface ProductsViewProps {
   onNavigateToContact: (quoteSubject: string) => void;
+  products: Product[];
+  catalogTitle?: string;
+  catalogSubtitle?: string;
+  catalogDescription?: string;
 }
 
-interface ProductItem {
-  id: string;
-  name: string;
-  category: string;
-  description: string;
-  price: string;
-  image: string;
-  origin: string;
-  dimensions?: string;
-  isPopular?: boolean;
-}
-
-export default function ProductsView({ onNavigateToContact }: ProductsViewProps) {
+export default function ProductsView({
+  onNavigateToContact,
+  products,
+  catalogTitle = "Les Trésors de l’Atelier",
+  catalogSubtitle = "Notre Catalogue de Céramiques d'Exception",
+  catalogDescription = "Chaque objet est une pièce unique, tournée ou modelée à la main à Bukavu par nos artisans. Nous utilisons une argile ocre locale, cuite à haute température pour assurer robustesse au four ou au lave-vaisselle."
+}: ProductsViewProps) {
   const [activeCategory, setActiveCategory] = useState<string>('all');
-  const [selectedProduct, setSelectedProduct] = useState<ProductItem | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   useEffect(() => {
     if (selectedProduct) {
@@ -39,92 +38,6 @@ export default function ProductsView({ onNavigateToContact }: ProductsViewProps)
     { id: 'custom', label: 'Commandes Sur-mesure / Cafés' }
   ];
 
-  const products: ProductItem[] = [
-    {
-      id: 'prod-01',
-      name: 'Tasse Kahuzi-Biega',
-      category: 'table',
-      description: 'Mug artisanal rustique tourné à la main, recouvert d’un émail volcanique satiné noir et ocre inspiré du parc national. Idéal pour votre café matinal.',
-      price: '15.000 FC / 8 $',
-      image: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&q=80&w=600',
-      origin: 'Bukavu (Kadutu)',
-      dimensions: 'Hauteur 9cm, Ø 8.5cm',
-      isPopular: true
-    },
-    {
-      id: 'prod-02',
-      name: 'Assiette plate "Terroir de Kabare"',
-      category: 'table',
-      description: 'Assiette large avec un contour brut texturé, préservant la teinte sauvage et ocre de l’argile naturelle. Émail blanc crème mat sur la surface utile.',
-      price: '28.000 FC / 12 $',
-      image: 'https://images.unsplash.com/photo-1590451430585-64c1f1446937?auto=format&fit=crop&q=80&w=600',
-      origin: 'Bukavu (Kadutu)',
-      dimensions: 'Ø 24cm',
-      isPopular: true
-    },
-    {
-      id: 'prod-03',
-      name: 'Vase Amphore Volcan Mat',
-      category: 'decor',
-      description: 'Vase sculptural façonné à la plaque avec des anses géométriques. Texture extérieure rugueuse rappelant le basalte, intérieur imperméabilisé.',
-      price: '70.000 FC / 30 $',
-      image: 'https://images.unsplash.com/photo-1612196808214-b8e1d6145a8c?auto=format&fit=crop&q=80&w=600',
-      origin: 'Bukavu (Kadutu)',
-      dimensions: 'Hauteur 28cm, Largeur max 16cm'
-    },
-    {
-      id: 'prod-04',
-      name: 'Bol à Ramen "Kivu Teal"',
-      category: 'table',
-      description: 'Grand bol robuste avec repose-baguettes moulé. Vernis intérieur bleu-vert canard scintillant rappelant les eaux profondes du lac Kivu.',
-      price: '35.000 FC / 15 $',
-      image: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&q=80&w=600',
-      origin: 'Bukavu (Kadutu)',
-      dimensions: 'Hauteur 11cm, Ø 18cm'
-    },
-    {
-      id: 'prod-05',
-      name: 'Pot à Bonsaï Souche Charnue',
-      category: 'decor',
-      description: 'Coupe large et basse percée à l’égout, modelée avec des rainures reproduisant l’écorce des grands arbres de la forêt équatoriale.',
-      price: '45.000 FC / 19 $',
-      image: 'https://images.unsplash.com/photo-1574484284002-952d92456975?auto=format&fit=crop&q=80&w=600',
-      origin: 'Bukavu (Kadutu)',
-      dimensions: 'Ø 20cm, Hauteur 7cm'
-    },
-    {
-      id: 'prod-06',
-      name: 'Service à Thé Complet "Goma" pour 4',
-      category: 'table',
-      description: 'Comprend 1 théière hermétique munie d’un filtre intégré et d’une poignée en rotin, assortie de 4 tasses cylindriques élégantes sans anses.',
-      price: '180.000 FC / 75 $',
-      image: 'https://images.unsplash.com/photo-1576092768241-dec231879fc3?auto=format&fit=crop&q=80&w=600',
-      origin: 'Bukavu (Kadutu)',
-      dimensions: 'Théière 750ml, Tasses 150ml'
-    },
-    {
-      id: 'prod-07',
-      name: 'Ensemble de tasses pour Cafés & Restos',
-      category: 'custom',
-      description: 'Service personnalisé d’espresso ou de cappuccino pour bars, coffee shops et hôtels. Choix d’email, estampage de votre logo d’entreprise.',
-      price: 'Sur devis (Tarif dégressif)',
-      image: 'https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?auto=format&fit=crop&q=80&w=600',
-      origin: 'Bukavu (Kadutu)',
-      dimensions: 'Volumétries ajustables de 80ml à 350ml',
-      isPopular: true
-    },
-    {
-      id: 'prod-08',
-      name: 'Jarres Décoratives de Sol d’Hôtel',
-      category: 'custom',
-      description: 'Jarre monumentale de décoration d’intérieur d’un demi-mètre de haut, modelée au boudin par les aînés formateurs de l’atelier.',
-      price: 'Sur Devis uniquement',
-      image: 'https://images.unsplash.com/photo-1614362945762-3740268291f4?auto=format&fit=crop&q=80&w=600',
-      origin: 'Bukavu (Kadutu)',
-      dimensions: 'Hauteur 55cm, Ø 32cm'
-    }
-  ];
-
   const filteredProducts = activeCategory === 'all'
     ? products
     : products.filter(p => p.category === activeCategory);
@@ -136,17 +49,17 @@ export default function ProductsView({ onNavigateToContact }: ProductsViewProps)
 
   return (
     <div className="space-y-12 animate-fade-in text-stone-700">
-      
+
       {/* 1. SECTION INTRO */}
       <section className="text-center max-w-2xl mx-auto space-y-4">
         <span className="text-[#df6438] font-mono text-xs tracking-widest uppercase font-bold">
-          Les Trésors de l’Atelier
+          {catalogTitle}
         </span>
         <h1 className="font-display font-black text-3xl sm:text-4xl text-stone-900 leading-tight">
-          Notre Catalogue de Céramiques d'Exception
+          {catalogSubtitle}
         </h1>
         <p className="text-stone-500 text-sm leading-relaxed font-light">
-          Chaque objet est une pièce unique, tournée ou modelée à la main à Bukavu par nos artisans. Nous utilisons une argile ocre locale, cuite à haute température pour assurer robustesse au four ou au lave-vaisselle.
+          {catalogDescription}
         </p>
       </section>
 
@@ -156,11 +69,10 @@ export default function ProductsView({ onNavigateToContact }: ProductsViewProps)
           <button
             key={cat.id}
             onClick={() => setActiveCategory(cat.id)}
-            className={`px-5 py-2.5 rounded-full text-xs font-semibold tracking-wide transition-all cursor-pointer ${
-              activeCategory === cat.id
-                ? 'bg-[#df6438] text-white shadow-xs'
-                : 'bg-white border border-stone-200 text-stone-600 hover:text-stone-950 hover:bg-stone-50'
-            }`}
+            className={`px-5 py-2.5 rounded-full text-xs font-semibold tracking-wide transition-all cursor-pointer ${activeCategory === cat.id
+              ? 'bg-[#df6438] text-white shadow-xs'
+              : 'bg-white border border-stone-200 text-stone-600 hover:text-stone-950 hover:bg-stone-50'
+              }`}
           >
             {cat.label}
           </button>
@@ -222,11 +134,11 @@ export default function ProductsView({ onNavigateToContact }: ProductsViewProps)
 
       {/* 4. MODAL DRAWER FOR DETAILED STUDY & QUOTING */}
       {selectedProduct && (
-        <div 
+        <div
           className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto"
           onClick={() => setSelectedProduct(null)}
         >
-          <div 
+          <div
             className="bg-white rounded-3xl overflow-hidden max-w-2xl w-full border border-stone-200 shadow-2xl relative animate-scale-up my-auto"
             onClick={(e) => e.stopPropagation()}
           >
@@ -245,7 +157,7 @@ export default function ProductsView({ onNavigateToContact }: ProductsViewProps)
                   className="w-full h-full object-cover"
                 />
               </div>
-              
+
               <div className="p-8 space-y-5 flex flex-col justify-between">
                 <div className="space-y-2.5">
                   <span className="text-[10px] font-mono text-stone-500 font-extrabold uppercase tracking-widest block">
@@ -257,7 +169,7 @@ export default function ProductsView({ onNavigateToContact }: ProductsViewProps)
                   <p className="text-stone-600 text-xs leading-relaxed">
                     {selectedProduct.description}
                   </p>
-                  
+
                   {selectedProduct.dimensions && (
                     <div className="p-3 bg-stone-50 rounded-lg space-y-1 font-mono text-[11px] text-stone-500">
                       <div><strong className="text-stone-700">Dimensions:</strong> {selectedProduct.dimensions}</div>

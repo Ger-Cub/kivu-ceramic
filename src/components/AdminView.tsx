@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import {
   Building, BookOpen, MessageSquare, Database, Plus, Trash2, Edit3, CheckCheck,
-  SquarePlay, ShieldAlert, Sparkles, Loader2, LogOut, Check, ChevronDown, CheckCircle, AlertCircle
+  SquarePlay, ShieldAlert, Sparkles, Loader2, LogOut, Check, ChevronDown, CheckCircle, AlertCircle, ShoppingBag
 } from 'lucide-react';
-import { Article, Contact, CompanyDetails } from '../types';
+import { Article, Contact, CompanyDetails, Product } from '../types';
 import AfricanPattern from './AfricanPattern';
 import { supabase } from '../lib/supabase';
 
@@ -12,6 +12,8 @@ interface AdminViewProps {
   onUpdateCompany: (comp: CompanyDetails) => void;
   articles: Article[];
   onRefreshArticles: () => void;
+  products: Product[];
+  onRefreshProducts: () => void;
   contacts: Contact[];
   onRefreshContacts: () => void;
   token: string | null;
@@ -25,6 +27,8 @@ export default function AdminView({
   onUpdateCompany,
   articles,
   onRefreshArticles,
+  products,
+  onRefreshProducts,
   contacts,
   onRefreshContacts,
   token,
@@ -33,7 +37,7 @@ export default function AdminView({
   onBackToSite
 }: AdminViewProps) {
   // Navigation internal
-  const [adminTab, setAdminTab] = useState<'dashboard' | 'articles' | 'inbox' | 'company'>('dashboard');
+  const [adminTab, setAdminTab] = useState<'dashboard' | 'articles' | 'products' | 'inbox' | 'company'>('dashboard');
 
   // Input states for Admin login
   const [passkey, setPasskey] = useState('');
@@ -53,6 +57,20 @@ export default function AdminView({
   const [blogActionSuccess, setBlogActionSuccess] = useState(false);
   const [imageUploading, setImageUploading] = useState(false);
 
+  // States for Product CRUD
+  const [editingProductId, setEditingProductId] = useState<string | null>(null);
+  const [prodName, setProdName] = useState('');
+  const [prodCategory, setProdCategory] = useState('table');
+  const [prodDescription, setProdDescription] = useState('');
+  const [prodPrice, setProdPrice] = useState('');
+  const [prodImage, setProdImage] = useState('');
+  const [prodOrigin, setProdOrigin] = useState('Bukavu (Kadutu)');
+  const [prodDimensions, setProdDimensions] = useState('');
+  const [prodIsPopular, setProdIsPopular] = useState(false);
+  const [prodSubmitting, setProdSubmitting] = useState(false);
+  const [prodActionError, setProdActionError] = useState('');
+  const [prodActionSuccess, setProdActionSuccess] = useState(false);
+
   // States for Company Settings Update
   const [compPhone, setCompPhone] = useState(company.phone);
   const [compEmail, setCompEmail] = useState(company.email);
@@ -60,6 +78,9 @@ export default function AdminView({
   const [compMission, setCompMission] = useState(company.mission);
   const [compVision, setCompVision] = useState(company.vision);
   const [compAboutText, setCompAboutText] = useState(company.aboutText);
+  const [compCatalogTitle, setCompCatalogTitle] = useState(company.catalogTitle || '');
+  const [compCatalogSubtitle, setCompCatalogSubtitle] = useState(company.catalogSubtitle || '');
+  const [compCatalogDescription, setCompCatalogDescription] = useState(company.catalogDescription || '');
   const [compSubmitting, setCompSubmitting] = useState(false);
   const [compSuccess, setCompSuccess] = useState(false);
 
@@ -81,6 +102,9 @@ export default function AdminView({
       setCompMission(company.mission || '');
       setCompVision(company.vision || '');
       setCompAboutText(company.aboutText || '');
+      setCompCatalogTitle(company.catalogTitle || '');
+      setCompCatalogSubtitle(company.catalogSubtitle || '');
+      setCompCatalogDescription(company.catalogDescription || '');
     }
   }, [company]);
 
@@ -165,7 +189,10 @@ export default function AdminView({
           address: compAddress,
           mission: compMission,
           vision: compVision,
-          about_text: compAboutText
+          about_text: compAboutText,
+          catalog_title: compCatalogTitle,
+          catalog_subtitle: compCatalogSubtitle,
+          catalog_description: compCatalogDescription
         })
         .select()
         .single();
@@ -175,7 +202,10 @@ export default function AdminView({
       setCompSuccess(true);
       onUpdateCompany({
         ...data,
-        aboutText: data.about_text
+        aboutText: data.about_text,
+        catalogTitle: data.catalog_title,
+        catalogSubtitle: data.catalog_subtitle,
+        catalogDescription: data.catalog_description
       });
       setTimeout(() => setCompSuccess(false), 4000);
     } catch (err) {
@@ -266,12 +296,112 @@ export default function AdminView({
         .from('images')
         .getPublicUrl(filePath);
 
-      setBlogImage(publicUrl);
+      if (editingProductId || adminTab === 'products') {
+        setProdImage(publicUrl);
+      } else {
+        setBlogImage(publicUrl);
+      }
     } catch (err: any) {
       console.error(err);
       setBlogActionError("Erreur lors de l'envoi de l'image : " + err.message);
+      setProdActionError("Erreur lors de l'envoi de l'image : " + err.message);
     } finally {
       setImageUploading(false);
+    }
+  };
+
+  // Product specific CRUD handlers
+  const handleLoadEditProduct = (prod: Product) => {
+    setEditingProductId(prod.id);
+    setProdName(prod.name);
+    setProdCategory(prod.category);
+    setProdDescription(prod.description);
+    setProdPrice(prod.price);
+    setProdImage(prod.image);
+    setProdOrigin(prod.origin);
+    setProdDimensions(prod.dimensions || '');
+    setProdIsPopular(prod.isPopular || false);
+    setProdActionSuccess(false);
+    setProdActionError('');
+  };
+
+  const handleResetProductForm = () => {
+    setEditingProductId(null);
+    setProdName('');
+    setProdCategory('table');
+    setProdDescription('');
+    setProdPrice('');
+    setProdImage('');
+    setProdOrigin('Bukavu (Kadutu)');
+    setProdDimensions('');
+    setProdIsPopular(false);
+    setProdActionSuccess(false);
+    setProdActionError('');
+  };
+
+  const handleSaveProduct = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!prodName.trim() || !prodDescription.trim() || !prodPrice.trim()) {
+      setProdActionError("Le nom, la description et le prix sont requis.");
+      return;
+    }
+
+    setProdSubmitting(true);
+    setProdActionError('');
+    setProdActionSuccess(false);
+
+    const prodPayload = {
+      name: prodName,
+      category: prodCategory,
+      description: prodDescription,
+      price: prodPrice,
+      image: prodImage || "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&q=80&w=600",
+      origin: prodOrigin,
+      dimensions: prodDimensions,
+      is_popular: prodIsPopular
+    };
+
+    try {
+      if (editingProductId) {
+        const { error } = await supabase
+          .from('products')
+          .update(prodPayload)
+          .eq('id', editingProductId);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from('products')
+          .insert({
+            id: Math.random().toString(36).substr(2, 9),
+            ...prodPayload
+          });
+        if (error) throw error;
+      }
+
+      setProdActionSuccess(true);
+      handleResetProductForm();
+      onRefreshProducts();
+      setTimeout(() => setProdActionSuccess(false), 4500);
+    } catch (err: any) {
+      setProdActionError(err.message || "L'action sur le produit a échoué.");
+    } finally {
+      setProdSubmitting(false);
+    }
+  };
+
+  const handleDeleteProduct = async (productId: string) => {
+    if (!confirm("Voulez-vous définitivement supprimer ce produit du catalogue ?")) return;
+    try {
+      const { error } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', productId);
+
+      if (error) throw error;
+      onRefreshProducts();
+    } catch (err) {
+      console.error(err);
+      alert("La suppression du produit a échoué.");
     }
   };
 
@@ -419,7 +549,7 @@ export default function AdminView({
     <div className="bg-white w-full min-h-screen flex flex-col md:flex-row relative animate-fade-in text-stone-700">
 
       {/* Horizontal / Vertical sidebar menu */}
-      <aside className="w-full md:w-64 bg-stone-950 text-stone-300 p-6 space-y-6 shrink-0 flex flex-col justify-between border-r border-stone-800">
+      <aside className="w-full md:w-64 bg-stone-950 text-stone-300 p-6 space-y-6 shrink-0 flex flex-col justify-between border-r border-stone-800 md:sticky md:top-0 md:h-screen overflow-y-auto">
 
         {/* Navigation block */}
         <div className="space-y-6">
@@ -443,6 +573,7 @@ export default function AdminView({
             {[
               { id: 'dashboard', label: 'Indicateurs / Stats', icon: Database },
               { id: 'articles', label: 'Éditer le Blog (Art)', icon: BookOpen },
+              { id: 'products', label: 'Catalogue Produits', icon: ShoppingBag },
               { id: 'inbox', label: 'Messages Inbox', icon: MessageSquare },
               { id: 'company', label: 'Profil de l\'Atelier', icon: Building }
             ].map((it) => {
@@ -756,6 +887,214 @@ export default function AdminView({
         )}
 
         {/* ------------------------------------------------------------- */}
+        {/* INTERACTIVE WORK AREA: CATALOG PRODUCTS CRUD SECTION */}
+        {/* ------------------------------------------------------------- */}
+        {adminTab === 'products' && (
+          <div className="space-y-8">
+            <div className="space-y-1.5 pb-4 border-b border-stone-100 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+              <div>
+                <h2 className="font-display font-black text-stone-950 text-2xl">
+                  {editingProductId ? "Modifier le produit" : "Gérer le Catalogue Produits"}
+                </h2>
+                <p className="text-xs text-stone-500 font-light mt-0.5">
+                  Ajoutez vos nouvelles créations au catalogue ou modifiez les prix et descriptions.
+                </p>
+              </div>
+              {editingProductId && (
+                <button
+                  onClick={handleResetProductForm}
+                  className="px-3 py-1.5 bg-stone-100 rounded-lg text-xs font-semibold text-stone-600 hover:bg-stone-200"
+                >
+                  Annuler la modification
+                </button>
+              )}
+            </div>
+
+            {/* Product form */}
+            <form onSubmit={handleSaveProduct} className="space-y-4 p-6 bg-stone-50 rounded-2xl border border-stone-200">
+              <h3 className="font-display font-extrabold text-stone-900 text-sm uppercase tracking-wide flex items-center gap-1.5">
+                <Plus className="w-5 h-5 text-[#df6438]" /> {editingProductId ? "Formulaire de modification de produit" : "Ajouter une nouvelle création"}
+              </h3>
+
+              {prodActionSuccess && (
+                <div className="p-3 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-xl text-xs font-medium">
+                  ✓ Produit enregistré avec succès !
+                </div>
+              )}
+
+              {prodActionError && (
+                <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-xs font-medium">
+                  ⚠️ {prodActionError}
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="sm:col-span-2 space-y-1">
+                  <label className="text-[10px] font-mono text-stone-500 font-bold uppercase tracking-wider block">Nom du Produit *</label>
+                  <input
+                    type="text"
+                    required
+                    value={prodName}
+                    onChange={(e) => setProdName(e.target.value)}
+                    placeholder="Ex : Tasse Kahuzi-Biega"
+                    className="w-full px-4 py-2.5 bg-white rounded-xl border border-stone-200 text-xs focus:outline-hidden focus:ring-1 focus:ring-[#df6438] text-stone-800 transition-all font-mono"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-mono text-stone-500 font-bold uppercase tracking-wider block">Catégorie *</label>
+                  <select
+                    value={prodCategory}
+                    onChange={(e) => setProdCategory(e.target.value)}
+                    className="w-full px-4 py-2.5 bg-white rounded-xl border border-stone-200 text-xs focus:outline-hidden focus:ring-1 focus:ring-[#df6438] text-stone-800 transition-all font-mono"
+                  >
+                    <option value="table">Art de la Table</option>
+                    <option value="decor">Décoration</option>
+                    <option value="custom">Sur-mesure / Cafés</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-mono text-stone-500 font-bold uppercase tracking-wider block">Prix (Texte libre) *</label>
+                  <input
+                    type="text"
+                    required
+                    value={prodPrice}
+                    onChange={(e) => setProdPrice(e.target.value)}
+                    placeholder="Ex : 15.000 FC / 8 $"
+                    className="w-full px-4 py-2.5 bg-white rounded-xl border border-stone-200 text-xs focus:outline-hidden focus:ring-1 focus:ring-[#df6438] text-stone-800 transition-all font-mono"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-mono text-stone-500 font-bold uppercase tracking-wider block">Origine</label>
+                  <input
+                    type="text"
+                    value={prodOrigin}
+                    onChange={(e) => setProdOrigin(e.target.value)}
+                    placeholder="Bukavu (Kadutu)"
+                    className="w-full px-4 py-2.5 bg-white rounded-xl border border-stone-200 text-xs focus:outline-hidden focus:ring-1 focus:ring-[#df6438] text-stone-800 transition-all font-mono"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-mono text-stone-500 font-bold uppercase tracking-wider block">Dimensions</label>
+                  <input
+                    type="text"
+                    value={prodDimensions}
+                    onChange={(e) => setProdDimensions(e.target.value)}
+                    placeholder="Ex : Ø 24cm"
+                    className="w-full px-4 py-2.5 bg-white rounded-xl border border-stone-200 text-xs focus:outline-hidden focus:ring-1 focus:ring-[#df6438] text-stone-800 transition-all font-mono"
+                  />
+                </div>
+                <div className="flex items-center gap-2 pt-6">
+                  <input
+                    type="checkbox"
+                    id="isPopular"
+                    checked={prodIsPopular}
+                    onChange={(e) => setProdIsPopular(e.target.checked)}
+                    className="w-4 h-4 text-[#df6438] border-stone-300 rounded focus:ring-[#df6438]"
+                  />
+                  <label htmlFor="isPopular" className="text-xs font-semibold text-stone-700">Mettre en avant (Populaire)</label>
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-mono text-stone-500 font-bold uppercase tracking-wider block">Image du produit</label>
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      disabled={imageUploading}
+                      className="hidden"
+                      id="prod-image-upload"
+                    />
+                    <label
+                      htmlFor="prod-image-upload"
+                      className={`flex-grow px-4 py-2 bg-stone-100 border border-stone-200 rounded-xl text-xs font-mono cursor-pointer flex items-center justify-center gap-2 hover:bg-stone-200 transition-all ${imageUploading ? 'opacity-50 pointer-events-none' : ''}`}
+                    >
+                      {imageUploading ? (
+                        <><Loader2 className="w-4 h-4 animate-spin" /> Envoi...</>
+                      ) : (
+                        <>📷 Cliquer pour uploader l'image</>
+                      )}
+                    </label>
+                  </div>
+                  {prodImage && (
+                    <div className="flex items-center gap-2">
+                      <div className="w-10 h-10 rounded-lg overflow-hidden border">
+                        <img src={prodImage} className="w-full h-full object-cover" />
+                      </div>
+                      <input
+                        type="text"
+                        value={prodImage}
+                        readOnly
+                        className="flex-grow px-4 py-2 bg-stone-50 rounded-xl border border-stone-100 text-[10px] font-mono text-stone-400 truncate"
+                      />
+                      <button type="button" onClick={() => setProdImage('')} className="p-2 text-rose-500"><Trash2 className="w-4 h-4" /></button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-mono text-stone-500 font-bold uppercase tracking-wider block">Description du produit *</label>
+                <textarea
+                  required
+                  rows={4}
+                  value={prodDescription}
+                  onChange={(e) => setProdDescription(e.target.value)}
+                  placeholder="Décrivez les caractéristiques du produit..."
+                  className="w-full px-4 py-2.5 bg-white rounded-xl border border-stone-200 text-xs focus:outline-hidden focus:ring-1 focus:ring-[#df6438] text-stone-800 transition-all font-mono leading-relaxed"
+                ></textarea>
+              </div>
+
+              <button
+                type="submit"
+                disabled={prodSubmitting}
+                className="w-full py-3 bg-[#df6438] hover:bg-terracotta-700 disabled:bg-stone-450 text-white rounded-xl text-xs font-bold tracking-wider uppercase transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+              >
+                {prodSubmitting ? "Enregistrement..." : editingProductId ? "Sauvegarder les modifications" : "Ajouter au catalogue"}
+              </button>
+            </form>
+
+            {/* Products list */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {products.map(prod => (
+                <div key={prod.id} className="bg-white border border-stone-200 rounded-2xl overflow-hidden flex flex-col">
+                  <div className="aspect-square bg-stone-100 relative">
+                    <img src={prod.image} className="w-full h-full object-cover" />
+                    <div className="absolute top-2 right-2 flex gap-1">
+                      <button
+                        onClick={() => handleLoadEditProduct(prod)}
+                        className="p-1.5 bg-white/90 backdrop-blur-xs rounded-lg text-stone-700 hover:text-[#df6438] shadow-sm transition-colors"
+                      >
+                        <Edit3 className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteProduct(prod.id)}
+                        className="p-1.5 bg-white/90 backdrop-blur-xs rounded-lg text-stone-700 hover:text-rose-600 shadow-sm transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="p-4 space-y-1">
+                    <h4 className="font-display font-bold text-stone-900 text-sm truncate">{prod.name}</h4>
+                    <p className="text-[10px] text-stone-500 font-mono uppercase">{prod.category} • {prod.price}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ------------------------------------------------------------- */}
         {/* INTERACTIVE WORK AREA: MESSAGE BOX INBOX SECTION */}
         {/* ------------------------------------------------------------- */}
         {adminTab === 'inbox' && (
@@ -920,14 +1259,41 @@ export default function AdminView({
                 ></textarea>
               </div>
 
-              <div className="space-y-1">
-                <label className="text-[10px] font-mono text-stone-500 font-bold uppercase tracking-wider block">Texte d'introduction descriptif (À propos de l'Atelier)</label>
-                <textarea
-                  rows={4}
-                  value={compAboutText}
-                  onChange={(e) => setCompAboutText(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-stone-50 rounded-xl border border-stone-200 text-xs focus:outline-hidden focus:ring-1 focus:ring-[#df6438] text-stone-800 transition-all font-mono leading-relaxed"
-                ></textarea>
+              <div className="space-y-4 pt-4 border-t border-stone-100">
+                <h3 className="font-display font-extrabold text-stone-900 text-sm uppercase tracking-wide">Configuration du Catalogue</h3>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-mono text-stone-500 font-bold uppercase tracking-wider block">Titre de la section Catalogue</label>
+                  <input
+                    type="text"
+                    value={compCatalogTitle}
+                    onChange={(e) => setCompCatalogTitle(e.target.value)}
+                    placeholder="Les Trésors de l’Atelier"
+                    className="w-full px-4 py-2.5 bg-stone-50 rounded-xl border border-stone-200 text-xs focus:outline-hidden focus:ring-1 focus:ring-[#df6438] text-stone-800 transition-all font-mono"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-mono text-stone-500 font-bold uppercase tracking-wider block">Sous-titre de la section Catalogue</label>
+                  <input
+                    type="text"
+                    value={compCatalogSubtitle}
+                    onChange={(e) => setCompCatalogSubtitle(e.target.value)}
+                    placeholder="Notre Catalogue de Céramiques d'Exception"
+                    className="w-full px-4 py-2.5 bg-stone-50 rounded-xl border border-stone-200 text-xs focus:outline-hidden focus:ring-1 focus:ring-[#df6438] text-stone-800 transition-all font-mono"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-mono text-stone-500 font-bold uppercase tracking-wider block">Description de la section Catalogue</label>
+                  <textarea
+                    rows={3}
+                    value={compCatalogDescription}
+                    onChange={(e) => setCompCatalogDescription(e.target.value)}
+                    placeholder="Description du catalogue..."
+                    className="w-full px-4 py-2.5 bg-stone-50 rounded-xl border border-stone-200 text-xs focus:outline-hidden focus:ring-1 focus:ring-[#df6438] text-stone-800 transition-all font-mono leading-relaxed"
+                  ></textarea>
+                </div>
               </div>
 
               <button
