@@ -34,7 +34,7 @@ export default function Header({ activeTab, setActiveTab, isAdminLoggedIn, onLog
             {/* Styled Ceramic Pot abstraction in SVG */}
             <div className="flex items-center justify-center w-11 h-11 relative group">
               <img
-                src="/assets/kivu-ceramic-logo.svg"
+                src="/kivu-ceramic-logo.svg"
                 alt="Kivu Ceramic"
                 className="w-full h-full object-contain"
               />
@@ -59,8 +59,8 @@ export default function Header({ activeTab, setActiveTab, isAdminLoggedIn, onLog
                   key={item.id}
                   onClick={() => handleNavClick(item.id)}
                   className={`px-4 py-2 rounded-full text-sm font-medium tracking-wide transition-all ${isActive
-                      ? 'bg-[#df6438] text-white shadow-xs'
-                      : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100/50'
+                    ? 'bg-[#df6438] text-white shadow-xs'
+                    : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100/50'
                     }`}
                 >
                   {item.label}
@@ -76,8 +76,8 @@ export default function Header({ activeTab, setActiveTab, isAdminLoggedIn, onLog
                 <button
                   onClick={() => handleNavClick('admin')}
                   className={`px-4 py-2 border border-dashed rounded-full text-xs font-mono font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all ${activeTab === 'admin'
-                      ? 'bg-amber-100/50 border-amber-600 text-amber-900'
-                      : 'border-yellow-600 text-yellow-800 bg-yellow-50'
+                    ? 'bg-amber-100/50 border-amber-600 text-amber-900'
+                    : 'border-yellow-600 text-yellow-800 bg-yellow-50'
                     }`}
                 >
                   <ShieldAlert className="w-3.5 h-3.5" /> Paneau Admin
@@ -129,8 +129,8 @@ export default function Header({ activeTab, setActiveTab, isAdminLoggedIn, onLog
                 key={item.id}
                 onClick={() => handleNavClick(item.id)}
                 className={`w-full text-left px-4 py-3 rounded-xl text-base font-medium transition-all ${isActive
-                    ? 'bg-[#df6438] text-white shadow-xs'
-                    : 'text-stone-700 hover:bg-stone-100'
+                  ? 'bg-[#df6438] text-white shadow-xs'
+                  : 'text-stone-700 hover:bg-stone-100'
                   }`}
               >
                 {item.label}
@@ -143,8 +143,8 @@ export default function Header({ activeTab, setActiveTab, isAdminLoggedIn, onLog
                 <button
                   onClick={() => handleNavClick('admin')}
                   className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-center text-sm font-semibold transition-all ${activeTab === 'admin'
-                      ? 'bg-amber-100 border border-amber-300 text-amber-900'
-                      : 'bg-[#df6438]/10 text-[#df6438]'
+                    ? 'bg-amber-100 border border-amber-300 text-amber-900'
+                    : 'bg-[#df6438]/10 text-[#df6438]'
                     }`}
                 >
                   <ShieldAlert className="w-4 h-4" /> Gérer l'Atelier

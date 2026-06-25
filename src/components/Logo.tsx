@@ -20,8 +20,8 @@ export default function Logo({ className = '', showText = true, size = 'md' }: L
   return (
     <div className={`flex items-center gap-3 ${className}`}>
       <img
-        src="/assets/kivu-ceramic-logo.svg"
-        className={`${currentSize.svg} shrink-0`} 
+        src="/kivu-ceramic-logo.svg"
+        className={`${currentSize.svg} shrink-0`}
         alt="Kivu Ceramic logo"
       />
 

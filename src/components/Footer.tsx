@@ -19,7 +19,7 @@ export default function Footer({ company, onNavigate }: FooterProps) {
             <div className="flex items-center gap-3">
               <div className="flex items-center justify-center w-10 h-10 relative">
                 <img
-                  src="/assets/kivu-ceramic-logo.svg"
+                  src="/kivu-ceramic-logo.svg"
                   alt="Kivu Ceramic"
                   className="w-full h-full object-contain"
                 />

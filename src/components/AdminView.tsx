@@ -556,7 +556,7 @@ export default function AdminView({
           <div className="space-y-1 pb-4 border-b border-stone-800">
             <div className="w-10 h-10 mb-2">
               <img
-                src="/assets/kivu-ceramic-logo.svg"
+                src="/kivu-ceramic-logo.svg"
                 alt="Logo"
                 className="w-full h-full object-contain brightness-0 invert"
               />
