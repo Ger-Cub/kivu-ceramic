@@ -103,14 +103,20 @@ const products = [
     }
 ];
 
+const companyDefaults = {
+    catalog_title: "Les Trésors de l’Atelier",
+    catalog_subtitle: "Notre Catalogue de Céramiques d'Exception",
+    catalog_description: "Chaque objet est une pièce unique, tournée ou modelée à la main à Bukavu par nos artisans. Nous utilisons une argile ocre locale, cuite à haute température pour assurer robustesse au four ou au lave-vaisselle."
+};
+
 async function seed() {
-    console.log('Seeding products via REST API...');
+    console.log('Seeding products and company settings via REST API...');
 
-    const restUrl = `${supabaseUrl}/rest/v1/products`;
-
+    // 1. Seed Products
+    const productsUrl = `${supabaseUrl}/rest/v1/products`;
     for (const product of products) {
         try {
-            const response = await fetch(`${restUrl}?id=eq.${product.id}`, {
+            const response = await fetch(`${productsUrl}?id=eq.${product.id}`, {
                 method: 'POST',
                 headers: {
                     'apikey': supabaseKey,
@@ -131,6 +137,30 @@ async function seed() {
             console.error(`Fetch error for ${product.name}:`, err.message);
         }
     }
+
+    // 2. Seed Company Settings (Update row 1)
+    const companyUrl = `${supabaseUrl}/rest/v1/company_settings?id=eq.1`;
+    try {
+        const response = await fetch(companyUrl, {
+            method: 'PATCH',
+            headers: {
+                'apikey': supabaseKey,
+                'Authorization': `Bearer ${supabaseKey}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(companyDefaults)
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error(`Error updating company settings: ${response.status} ${errorText}`);
+        } else {
+            console.log(`Company settings updated with catalog defaults.`);
+        }
+    } catch (err) {
+        console.error(`Fetch error for company settings:`, err.message);
+    }
+
     console.log('Done!');
 }
 

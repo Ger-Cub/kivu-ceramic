@@ -526,9 +526,7 @@ export default function AdminView({
                 placeholder="••••••••••••••"
                 className="w-full px-4 py-2.5 bg-stone-50 rounded-xl border border-stone-200 text-sm focus:outline-hidden focus:ring-1 focus:ring-terracotta-500 focus:bg-white text-stone-900 transition-all font-mono"
               />
-              <p className="text-[9px] text-[#df6438] font-mono block mt-1">
-                HINT : Rentrez "kivu2026" pour tester la boite de contrôle
-              </p>
+
             </div>
 
             <button

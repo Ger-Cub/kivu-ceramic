@@ -61,9 +61,9 @@ export default function App() {
         setCompany({
           ...data,
           aboutText: data.about_text, // mapping db snake_case to camelCase
-          catalogTitle: data.catalog_title,
-          catalogSubtitle: data.catalog_subtitle,
-          catalogDescription: data.catalog_description
+          catalogTitle: data.catalog_title || "Les Trésors de l’Atelier",
+          catalogSubtitle: data.catalog_subtitle || "Notre Catalogue de Céramiques d'Exception",
+          catalogDescription: data.catalog_description || "Chaque objet est une pièce unique, tournée ou modelée à la main à Bukavu par nos artisans. Nous utilisons une argile ocre locale, cuite à haute température pour assurer robustesse au four ou au lave-vaisselle."
         });
       }
     } catch (err: any) {
@@ -227,7 +227,7 @@ export default function App() {
   // Read clean status loaders
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#FAF8F5] flex flex-col justify-center items-center gap-4 text-stone-600">
+      <div className="min-h-screen bg-stone-50 flex flex-col justify-center items-center gap-4 text-stone-600 font-sans selection:bg-terracotta-200 selection:text-terracotta-900 overflow-x-hidden">
         <Loader2 className="w-10 h-10 animate-spin text-terracotta-600" />
         <p className="font-display font-medium text-sm tracking-wider uppercase">Chargement de Kivu Ceramic...</p>
       </div>
@@ -235,7 +235,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#FAF8F5]">
+    <div className="min-h-screen bg-stone-50 flex flex-col font-sans selection:bg-terracotta-200 selection:text-terracotta-900 overflow-x-hidden">
 
       {/* 1. MAIN GLOBAL NAVBAR HEADER */}
       {activeTab !== 'admin' && (
